@@ -77,7 +77,7 @@
         if (timer.value - 0.5 === 0.5) {
           if (!isExplosionPlaying) {
             await explosion.play();
-            explosion = true;
+            isExplosionPlaying = true;
           }
         }
 
