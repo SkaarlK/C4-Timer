@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>C4 Timer</title>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
+
+<style>
+    @font-face {
+        font-family: 'greenscreen';
+        src: url('./Greenscr.ttf');
+    }
+  img {
+    position: absolute;
+    right: 24px;
+    top: 24px;
+    width: 450px;
+  }
+  .digit {
+    position: absolute;
+    right: 133px;
+    top: 64px;
+    transform: rotate(-6.4deg);
+    font-family: "greenscreen", "Courier New", Courier, monospace;
+    font-size: 1em;
+    font-weight: bolder;
+  }
+</style>
+
+<script type="module">
+  import {
+    createApp,
+    ref,
+    computed,
+  } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+
+  createApp({
+    setup() {
+      const preExplosion = new Audio('./monster-footstep.mp3')
+      const explosion = new Audio('./explosion.mp3')
+      const seconds = 16;
+      const minutes = 1 * seconds;
+      const hours = 1 * minutes
+      const timer = ref(hours);
+      const timerInterval = setInterval(async () => {
+        if (timer.value - 1 === 15) await preExplosion.play();
+        if (timer.value - 1 === 1) await explosion.play();
+
+        if (timer.value - 1 >= 0)
+            timer.value--;
+        else clearInterval(timerInterval)
+      }, 1000);
+      const formattedTime = computed(() => {
+        const hours = Math.floor(timer.value / 3600)
+          .toString()
+          .padStart(2, "0");
+        const minutes = Math.floor((timer.value % 3600) / 60)
+          .toString()
+          .padStart(2, "0");
+        const seconds = (timer.value % 60).toString().padStart(2, "0");
+        return `${hours}:${minutes}:${seconds}`;
+      });
+      return {
+        formattedTime,
+      };
+    },
+    template: `
+    <img src="./C4.png" alt="">
+    <span class="digit">{{ formattedTime }}</span>
+  `,
+  }).mount("#app");
+</script>
