@@ -6,27 +6,146 @@
     <title>C4 Timer</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <timer-input v-if="!timerStarted" @start="startTimer"></timer-input>
+      <timer-bomb v-else :time="time"></timer-bomb>
+    </div>
   </body>
 </html>
 
+<script type="module">
+  import {
+    createApp,
+    ref,
+    computed,
+  } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+
+  const preExplosion = new Audio("./monster-footstep.mp3");
+  const explosion = new Audio("./explosion.mp3");
+
+  const TimerInput = {
+    template: `
+    <div>
+      <input type="number" v-model="inputHours" placeholder="Enter time in hours">
+      <input type="number" v-model="inputMinutes" placeholder="Enter time in minutes">
+      <input type="number" v-model="inputSeconds" placeholder="Enter time in seconds">
+      <button @click="start">Start</button>
+    </div>
+  `,
+    setup(props, { emit }) {
+      const inputHours = ref(0);
+      const inputMinutes = ref(0);
+      const inputSeconds = ref(0);
+
+      const inputTime = computed(() => inputHours.value * 3600 * inputMinutes.value * 60 + inputSeconds.value)
+
+      const start = () => {
+      emit("start", inputTime.value);
+      };
+
+      return {
+        inputTime,
+        inputHours,
+        inputMinutes,
+        inputSeconds,
+        start,
+      };
+    },
+  };
+
+  const TimerBomb = {
+    props: ["time"],
+    template: `
+    <div>
+      <img class="c4" src="./C4.png" v-show="timer >= 1" alt="">
+      <img class="atomic" src="./atomics.gif" v-show="timer <= 0" alt="">
+      <span class="digit" v-show="timer >= 1">{{ formattedTime }}</span>
+    </div>
+  `,
+    setup(props) {
+      const timer = ref(props.time);
+
+      let isPreExplosionPlaying, isExplosionPlaying;
+
+      const timerInterval = setInterval(async () => {
+        if (timer.value - 1 === 13) {
+          if (!isPreExplosionPlaying) {
+            await preExplosion.play();
+            isPreExplosionPlaying = true;
+          }
+        }
+        if (timer.value - 0.5 === 0.5) {
+          if (!explosion) {
+            await explosion.play();
+            explosion = true;
+          }
+        }
+
+        if (timer.value - 0.5 >= 0) {
+          timer.value -= 0.5;
+        } else clearInterval(timerInterval);
+      }, 500);
+      const formattedTime = computed(() => {
+        const hours = Math.floor(timer.value / 3600)
+          .toString()
+          .padStart(2, "0");
+        const minutes = Math.floor((timer.value % 3600) / 60)
+          .toString()
+          .padStart(2, "0");
+        const seconds = Math.round(timer.value % 60)
+          .toString()
+          .padStart(2, "0");
+        return `${hours}:${minutes}:${seconds}`;
+      });
+      return {
+        formattedTime,
+        timer,
+      };
+    },
+  };
+
+  createApp({
+    components: {
+      TimerInput,
+      TimerBomb,
+    },
+    setup() {
+      const timerStarted = ref(false);
+      const time = ref(0);
+
+      const startTimer = (timeValue) => {
+        time.value = timeValue;
+        timerStarted.value = true;
+      };
+
+      return {
+        timerStarted,
+        time,
+        startTimer,
+      };
+    },
+  }).mount("#app");
+</script>
+
 <style>
-    @font-face {
-        font-family: 'greenscreen';
-        src: url('./Greenscr.ttf');
-    }
+  @font-face {
+    font-family: "greenscreen";
+    src: url("./Greenscr.ttf");
+  }
 
-    html, body, #app {
-        width: 100vw;
-        height: 100vh;
-        padding: 0;
-        margin: 0;
-    }
+  html,
+  body,
+  #app {
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+  }
 
-    #app {
-        width: 100vw;
-        height: 100vh;
-    }
+  #app {
+    width: 100vw;
+    height: 100vh;
+  }
 
   .c4 {
     position: absolute;
@@ -54,55 +173,3 @@
     font-weight: bolder;
   }
 </style>
-
-<script type="module">
-  import {
-    createApp,
-    ref,
-    computed,
-  } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
-
-  createApp({
-    setup() {
-      const preExplosion = new Audio('./monster-footstep.mp3')
-      const explosion = new Audio('./explosion.mp3')
-
-      const seconds = 15;
-
-      const minutes = 0;
-
-      const hours = 0;
-
-      const timer = ref(hours * 3600 + minutes * 60 + seconds);
-
-      const timerInterval = setInterval(async () => {
-        if (timer.value - 1 === 13) await preExplosion.play();
-        if (timer.value - 0.5 === 0.5) await explosion.play();
-
-        if (timer.value - 0.5 >= 0) {
-            timer.value -= 0.5;
-        }
-        else clearInterval(timerInterval)
-      }, 500);
-      const formattedTime = computed(() => {
-        const hours = Math.floor(timer.value / 3600)
-          .toString()
-          .padStart(2, "0");
-        const minutes = Math.floor((timer.value % 3600) / 60)
-          .toString()
-          .padStart(2, "0");
-        const seconds = Math.round((timer.value % 60)).toString().padStart(2, "0");
-        return `${hours}:${minutes}:${seconds}`;
-      });
-      return {
-        formattedTime,
-        timer
-      };
-    },
-    template: `
-    <img class="c4" src="./C4.png" v-show="timer >= 1" alt="">
-    <img class="atomic" src="./atomics.gif" v-show="timer <= 0" alt="">
-    <span class="digit" v-show="timer >= 1">{{ formattedTime }}</span>
-  `,
-  }).mount("#app");
-</script>
