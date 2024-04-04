@@ -43,18 +43,24 @@
     setup() {
       const preExplosion = new Audio('./monster-footstep.mp3')
       const explosion = new Audio('./explosion.mp3')
-      const seconds = 16;
-      const minutes = 1 * seconds;
-      const hours = 1 * minutes
-      const timer = ref(hours);
-      const timerInterval = setInterval(async () => {
-        if (timer.value - 1 === 15) await preExplosion.play();
-        if (timer.value - 1 === 1) await explosion.play();
 
-        if (timer.value - 1 >= 0)
-            timer.value--;
+      const seconds = 16;
+
+      const minutes = 0;
+
+      const hours = 0;
+
+      const timer = ref(hours * 3600 + minutes * 60 + seconds);
+
+      const timerInterval = setInterval(async () => {
+        if (timer.value - 1 === 13) await preExplosion.play();
+        if (timer.value - 0.5 === 0.5) await explosion.play();
+
+        if (timer.value - 0.5 >= 0) {
+            timer.value -= 0.5;
+        }
         else clearInterval(timerInterval)
-      }, 1000);
+      }, 500);
       const formattedTime = computed(() => {
         const hours = Math.floor(timer.value / 3600)
           .toString()
@@ -62,7 +68,7 @@
         const minutes = Math.floor((timer.value % 3600) / 60)
           .toString()
           .padStart(2, "0");
-        const seconds = (timer.value % 60).toString().padStart(2, "0");
+        const seconds = Math.round((timer.value % 60)).toString().padStart(2, "0");
         return `${hours}:${minutes}:${seconds}`;
       });
       return {
