@@ -33,9 +33,9 @@
     </div>
   `,
     setup(props, { emit }) {
-      const inputHours = ref(0);
-      const inputMinutes = ref(0);
-      const inputSeconds = ref(0);
+      const inputHours = ref(null);
+      const inputMinutes = ref(null);
+      const inputSeconds = ref(null);
 
       const inputTime = computed(() => inputHours.value * 3600 * inputMinutes.value * 60 + inputSeconds.value)
 
