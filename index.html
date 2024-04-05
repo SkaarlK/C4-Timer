@@ -37,7 +37,7 @@
       const inputMinutes = ref(null);
       const inputSeconds = ref(null);
 
-      const inputTime = computed(() => inputHours.value * 3600 * inputMinutes.value * 60 + inputSeconds.value)
+      const inputTime = computed(() => (inputHours.value * 3600) + (inputMinutes.value * 60) + inputSeconds.value)
 
       const start = () => {
       emit("start", inputTime.value);
